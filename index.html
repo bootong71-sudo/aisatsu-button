@@ -67,7 +67,7 @@
       cursor: pointer;
     }
 
-    /* メインコンテンツ表示域（上部空きスペース） */
+    /* メインコンテンツ表示域 */
     .display-area {
       flex: 1;
       display: flex;
@@ -88,7 +88,7 @@
       margin-bottom: 10px;
     }
 
-    /* 下部スイッチ領域：画面下端（0px）まで隙間なく伸ばす */
+    /* 下部スイッチ領域：画面最下部まで密着 */
     .switch-container {
       height: 60vh;
       width: 100%;
@@ -171,6 +171,30 @@
       margin-bottom: 16px;
       font-weight: bold;
     }
+    .count-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .count-selector label {
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    .count-btn {
+      flex: 1;
+      padding: 8px;
+      border: 2px solid #00f2fe;
+      background: #fff;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .count-btn.active {
+      background: #00f2fe;
+      color: white;
+    }
     .input-group {
       margin-bottom: 12px;
     }
@@ -204,7 +228,7 @@
     .btn-save { background: #8ac926; color: white; }
     .btn-cancel { background: #e9ecef; color: #495057; }
 
-    /* アニメーションパーティクル */
+    /* アニメーション演出 */
     .particle {
       position: fixed;
       pointer-events: none;
@@ -223,7 +247,7 @@
   <div class="top-bar">
     <button class="mode-btn" id="modeToggleBtn" onclick="cycleMode()">
       <span id="modeIcon">☀️</span>
-      <span id="modeTitle">あいさつ</span>
+      <span id="modeTitle">あいさつ (1択)</span>
     </button>
     <button class="edit-trigger" id="editTriggerBtn" onclick="openModal()">✏️ 編集</button>
   </div>
@@ -240,19 +264,18 @@
   <!-- カスタマイズモーダル -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-card">
-      <div class="modal-title">⚙️ カスタムボタン設定</div>
-      <div class="input-group">
-        <label>ボタン 1</label>
-        <input type="text" id="customInput0" value="のどがかわいた">
+      <div class="modal-title">⚙️ カスタム設定</div>
+      
+      <div class="count-selector">
+        <label>ボタンの数:</label>
+        <button class="count-btn" id="cntBtn1" onclick="selectCustomCount(1)">1択</button>
+        <button class="count-btn" id="cntBtn2" onclick="selectCustomCount(2)">2択</button>
+        <button class="count-btn" id="cntBtn3" onclick="selectCustomCount(3)">3択</button>
+        <button class="count-btn" id="cntBtn4" onclick="selectCustomCount(4)">4択</button>
       </div>
-      <div class="input-group">
-        <label>ボタン 2</label>
-        <input type="text" id="customInput1" value="トイレ">
-      </div>
-      <div class="input-group">
-        <label>ボタン 3</label>
-        <input type="text" id="customInput2" value="いたい">
-      </div>
+
+      <div id="customInputsArea"></div>
+
       <div class="modal-actions">
         <button class="action-btn btn-cancel" onclick="closeModal()">キャンセル</button>
         <button class="action-btn btn-save" onclick="saveCustomSettings()">保存する</button>
@@ -261,14 +284,41 @@
   </div>
 
   <script>
-    // モードデータ構造
+    // モードデータ定義
     const MODES = [
       {
-        id: 'aisatsu',
-        title: 'あいさつ',
+        id: 'aisatsu-1',
+        title: 'あいさつ (1択)',
         icon: '☀️',
         items: [
-          { label: 'おはよう', icon: '🌅', speech: 'おはようございます' },
+          { label: 'おはようございます', icon: '🌅', speech: 'おはようございます' }
+        ]
+      },
+      {
+        id: 'aisatsu-2',
+        title: 'あいさつ (2択)',
+        icon: '☀️',
+        items: [
+          { label: 'おはようございます', icon: '🌅', speech: 'おはようございます' },
+          { label: 'さようなら', icon: '👋', speech: 'さようなら' }
+        ]
+      },
+      {
+        id: 'aisatsu-3',
+        title: 'あいさつ (3択)',
+        icon: '☀️',
+        items: [
+          { label: 'おはようございます', icon: '🌅', speech: 'おはようございます' },
+          { label: 'さようなら', icon: '👋', speech: 'さようなら' },
+          { label: 'ありがとう', icon: '❤️', speech: 'ありがとう' }
+        ]
+      },
+      {
+        id: 'aisatsu-4',
+        title: 'あいさつ (4択)',
+        icon: '☀️',
+        items: [
+          { label: 'おはようございます', icon: '🌅', speech: 'おはようございます' },
           { label: 'こんにちは', icon: '☀️', speech: 'こんにちは' },
           { label: 'さようなら', icon: '👋', speech: 'さようなら' },
           { label: 'ありがとう', icon: '❤️', speech: 'ありがとう' }
@@ -309,24 +359,24 @@
         title: 'カスタム',
         icon: '⚙️',
         items: [
-          { label: 'のどがかわいた', icon: '🥤', speech: 'のどがかわいた' },
-          { label: 'トイレ', icon: '🚾', speech: 'トイレ' },
-          { label: 'いたい', icon: '⚡', speech: 'いたい' }
+          { label: 'のどがかわいた', icon: '💬', speech: 'のどがかわいた' },
+          { label: 'トイレ', icon: '💬', speech: 'トイレ' }
         ]
       }
     ];
 
     let currentModeIndex = 0;
+    let tempCustomCount = 2;
 
-    // Web Audio API による効果音発声
+    // Web Audio API による効果音
     function playBeep() {
       try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5
+        osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
         gain.gain.setValueAtTime(0.3, ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
         osc.connect(gain);
@@ -361,7 +411,7 @@
       }
     }
 
-    // スイッチ生成
+    // スイッチ画面生成
     function renderSwitches() {
       const mode = MODES[currentModeIndex];
       const container = document.getElementById('switchContainer');
@@ -375,7 +425,6 @@
           <span class="btn-label">${item.label}</span>
         `;
         
-        // タッチ時のレスポンス向上
         const handleAction = (e) => {
           e.preventDefault();
           playBeep();
@@ -397,26 +446,55 @@
         container.appendChild(btn);
       });
 
-      // UI表示の更新
+      // UI状態の更新
       document.getElementById('modeIcon').innerText = mode.icon;
       document.getElementById('modeTitle').innerText = mode.title;
       document.getElementById('editTriggerBtn').style.display = (mode.id === 'custom') ? 'block' : 'none';
     }
 
-    // モード切り替え
+    // モード順次切り替え
     function cycleMode() {
       playBeep();
       currentModeIndex = (currentModeIndex + 1) % MODES.length;
       renderSwitches();
     }
 
-    // カスタマイズ画面の制御
+    // カスタマイズ設定画面の処理
     function openModal() {
       const customItems = MODES.find(m => m.id === 'custom').items;
-      document.getElementById('customInput0').value = customItems[0]?.label || '';
-      document.getElementById('customInput1').value = customItems[1]?.label || '';
-      document.getElementById('customInput2').value = customItems[2]?.label || '';
+      tempCustomCount = customItems.length;
+      renderCustomModalInputs(customItems);
       document.getElementById('modalOverlay').style.display = 'flex';
+    }
+
+    function selectCustomCount(count) {
+      tempCustomCount = count;
+      const currentInputs = [];
+      for (let i = 0; i < count; i++) {
+        const el = document.getElementById(`customInput${i}`);
+        currentInputs.push(el ? el.value : '');
+      }
+      renderCustomModalInputs(currentInputs.map(val => ({ label: val })));
+    }
+
+    function renderCustomModalInputs(items) {
+      for (let i = 1; i <= 4; i++) {
+        const btn = document.getElementById(`cntBtn${i}`);
+        btn.classList.toggle('active', i === tempCustomCount);
+      }
+
+      const area = document.getElementById('customInputsArea');
+      area.innerHTML = '';
+      for (let i = 0; i < tempCustomCount; i++) {
+        const defaultText = items[i]?.label || `ことば ${i + 1}`;
+        const div = document.createElement('div');
+        div.className = 'input-group';
+        div.innerHTML = `
+          <label>ボタン ${i + 1} のことば</label>
+          <input type="text" id="customInput${i}" value="${defaultText}">
+        `;
+        area.appendChild(div);
+      }
     }
 
     function closeModal() {
@@ -424,16 +502,14 @@
     }
 
     function saveCustomSettings() {
-      const val0 = document.getElementById('customInput0').value.trim() || 'ボタン1';
-      const val1 = document.getElementById('customInput1').value.trim() || 'ボタン2';
-      const val2 = document.getElementById('customInput2').value.trim() || 'ボタン3';
+      const newItems = [];
+      for (let i = 0; i < tempCustomCount; i++) {
+        const val = document.getElementById(`customInput${i}`).value.trim() || `ボタン ${i + 1}`;
+        newItems.push({ label: val, icon: '💬', speech: val });
+      }
 
       const customMode = MODES.find(m => m.id === 'custom');
-      customMode.items = [
-        { label: val0, icon: '💬', speech: val0 },
-        { label: val1, icon: '💬', speech: val1 },
-        { label: val2, icon: '💬', speech: val2 }
-      ];
+      customMode.items = newItems;
 
       closeModal();
       renderSwitches();
